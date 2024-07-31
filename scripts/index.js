@@ -15,10 +15,25 @@ function createCard (cardData, deleteCallback) {
   cardElement.querySelector('.card__title').textContent = cardData.name;
 
   cardElement.querySelector('.card__delete-button').addEventListener('click', () => {
-    deleteCallback(cardData);
+    deleteCallback(cardElement);
   });
   return cardElement;
 }
+
+/**
+ * Удаляет элемент карточки из DOM.
+ * @param {HTMLElement} card - Элемент карточки для удаления.
+ */
+function handleDeleteCard (card) {
+  card.remove();
+} 
+
+/**
+ * Контейнер для карточек.
+ * @type {HTMLElement}
+ */
+const cardContainer = document.querySelector('.places__list');
+
 
 /**
  * Добавляет карточки в контейнер на основе массива данных.
@@ -26,13 +41,9 @@ function createCard (cardData, deleteCallback) {
  * @param {string} initialCards[].link - Ссылка на изображение карточки.
  * @param {string} initialCards[].name - Название карточки.
  */
-const cardContainer = document.querySelector('.places__list');
-
 initialCards.forEach((cardData) => {
-  const cardElement = createCard(cardData, function deleteCard(data) {
-    cardElement.remove();
-  });
+  const cardElement = createCard(cardData, handleDeleteCard);
   cardContainer.appendChild(cardElement);
-});
+}); 
 
 
