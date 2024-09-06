@@ -45,6 +45,14 @@ export function createCard(
 }
 
 /**
+ * Обрабатывает нажатие кнопки "лайк" для карточки.
+ * @param {HTMLElement} likeButton - Кнопка "лайк" для карточки.
+ */
+export function handleLikeCard(likeButton) {
+  likeButton.classList.toggle("card__like-button_is-active");
+}
+
+/**
  * Удаляет указанную карточку.
  * @param {HTMLElement} card - Карточка, которую нужно удалить.
  */
