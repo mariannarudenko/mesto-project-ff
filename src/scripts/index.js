@@ -19,7 +19,7 @@ const selectors = {
   editProfileButton: ".profile__edit-button",
   addCardButton: ".profile__add-button",
   placeNameInput: "input[name='place-name']",
-  linkInput: "input[name='link']",
+  linkInput: "input[name='link']"
 };
 
 // Использование констант
@@ -38,6 +38,8 @@ const profilName = document.querySelector(selectors.profilName);
 const profilDescription = document.querySelector(selectors.profilDescription);
 const editProfileButton = document.querySelector(selectors.editProfileButton);
 const addCardButton = document.querySelector(selectors.addCardButton);
+const placeNameInput = document.querySelector(selectors.placeNameInput);
+const linkInput = document.querySelector(selectors.linkInput);
 
 /** Добавление классов анимации для всех попапов */
 popupTypeImage.classList.add("popup_is-animated");
@@ -107,8 +109,8 @@ function handleProfileFormSubmit(evt, textProcessor) {
   evt.preventDefault();
 
   // Получение и обработка значений формы профиля
-  let nameValue = textProcessor(nameInput.value);
-  let jobValue = textProcessor(jobInput.value);
+  const nameValue = textProcessor(nameInput.value);
+  const jobValue = textProcessor(jobInput.value);
 
   // Обновление профиля
   profilName.textContent = nameValue;
@@ -129,12 +131,8 @@ function handleCardFormSubmit(evt, textProcessor) {
   evt.preventDefault();
 
   // Получение и обработка значений формы карточки
-  const placeNameValue = textProcessor(
-    document.querySelector(selectors.placeNameInput).value
-  );
-  const linkValue = textProcessor(
-    document.querySelector(selectors.linkInput).value
-  );
+  const placeNameValue = textProcessor(placeNameInput.value);
+  const linkValue = textProcessor(linkInput.value);
 
   // Создание новой карточки и добавление в начало списка
   const cardData = { name: placeNameValue, link: linkValue };
