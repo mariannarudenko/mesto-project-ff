@@ -47,18 +47,28 @@
           <form class="popup__form" name="edit-profile">
             <input
               type="text"
+              minlength="2"
+              maxlength="40"
+              pattern="^[a-zA-Zа-яА-Я\sёЁ\-]+$"
+              data-error-message="Разрешены только латинские и кириллические буквы, знаки дефиса и пробелы."
               name="name"
               class="popup__input popup__input_type_name"
               placeholder="Имя"
               required
             />
+            <span class="popup__input-error name-input-error"></span>
             <input
               type="text"
+              minlength="2"
+              maxlength="40"
+              pattern="^[a-zA-Zа-яА-Я\sёЁ\-]+$"
+              data-error-message="Разрешены только латинские и кириллические буквы, знаки дефиса и пробелы."
               name="description"
               class="popup__input popup__input_type_description"
               placeholder="Занятие"
               required
             />
+            <span class="popup__input-error description-input-error"></span>
             <button type="submit" class="button popup__button">
               Сохранить
             </button>

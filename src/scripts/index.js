@@ -2,6 +2,7 @@ import { createCard, handleDeleteCard, handleLikeCard } from "./card.js";
 import { initialCards } from "./cards.js";
 import "../pages/index.css";
 import { openPopup, closePopup } from "./modal.js";
+import { enableValidation, clearValidation } from "./validation.js";
 
 // Константы для селекторов
 const selectors = {
@@ -19,8 +20,21 @@ const selectors = {
   editProfileButton: ".profile__edit-button",
   addCardButton: ".profile__add-button",
   placeNameInput: "input[name='place-name']",
-  linkInput: "input[name='link']"
+  linkInput: "input[name='link']",
 };
+
+// Константы для валидации
+const validationConfig = {
+  formSelector: ".popup__form",
+  inputSelector: ".popup__input",
+  submitButtonSelector: ".popup__button",
+  inactiveButtonClass: "popup__button_disabled",
+  inputErrorClass: ".popup__input-error",
+  errorClass: "popup__input-error_active",
+};
+
+// Вызов функции для включения валидации
+enableValidation(validationConfig);
 
 // Использование констант
 const cardContainer = document.querySelector(selectors.cardContainer);
