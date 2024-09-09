@@ -29,7 +29,7 @@ const validationConfig = {
   inputSelector: ".popup__input",
   submitButtonSelector: ".popup__button",
   inactiveButtonClass: "popup__button_disabled",
-  inputErrorClass: ".popup__input-error",
+  inputErrorClass: "popup__input-error",
   errorClass: "popup__input-error_active",
 };
 
@@ -44,7 +44,7 @@ const captionPopup = popupTypeImage.querySelector(selectors.captionPopup);
 const popupCloseButton = document.querySelectorAll(selectors.popupCloseButton);
 const popupEditProfile = document.querySelector(selectors.popupEditProfile);
 const popupAddCard = document.querySelector(selectors.popupAddCard);
-const formElement = document.querySelector("form[name='edit-profile']");
+const profileFormElement = document.querySelector("form[name='edit-profile']");
 const cardFormElement = document.querySelector("form[name='new-place']");
 const nameInput = document.querySelector(selectors.nameInput);
 const jobInput = document.querySelector(selectors.jobInput);
@@ -88,19 +88,27 @@ function handleImageClick(imageElement) {
 }
 
 /**
- * Открывает форму редактирования профиля и заполняет поля значениями из профиля.
+ * Открывает форму редактирования профиля и 
+ * заполняет поля значениями из профиля,
+ * сбрасывает ошибки валидации перед открытием формы.
  */
 editProfileButton.addEventListener("click", function () {
   nameInput.value = profilName.textContent;
   jobInput.value = profilDescription.textContent;
 
+  clearValidation(profileFormElement, validationConfig);
   openPopup(popupEditProfile);
 });
 
 /**
- * Открывает popup для добавления новой карточки.
+ * Открывает popup для добавления новой карточки, 
+ * отчищает поля ввода и 
+ * сбрасывает ошибки валидации перед открытием формы.
  */
 addCardButton.addEventListener("click", function () {
+  placeNameInput.value = "";
+  linkInput.value = "";
+  clearValidation(cardFormElement, validationConfig);
   openPopup(popupAddCard);
 });
 
@@ -160,7 +168,7 @@ function handleCardFormSubmit(evt, textProcessor) {
 }
 
 // Обработка отправки формы профиля
-formElement.addEventListener("submit", function (evt) {
+profileFormElement.addEventListener("submit", function (evt) {
   handleProfileFormSubmit(evt, replaceDifficultLetter);
 });
 

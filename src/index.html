@@ -82,11 +82,16 @@
           <form class="popup__form" name="new-place">
             <input
               type="text"
+              minlength="2"
+              maxlength="30"
+              pattern="^[a-zA-Zа-яА-Я\sёЁ\-]+$"
+              data-error-message="Разрешены только латинские и кириллические буквы, знаки дефиса и пробелы."
               name="place-name"
               class="popup__input popup__input_type_card-name"
               placeholder="Название"
               required
             />
+            <span class="popup__input-error place-name-input-error"></span>
             <input
               type="url"
               name="link"
@@ -94,6 +99,7 @@
               placeholder="Ссылка на картинку"
               required
             />
+            <span class="popup__input-error link-input-error"></span>
             <button type="submit" class="button popup__button">
               Сохранить
             </button>

@@ -1,15 +1,13 @@
-// Включение валидации
 export function enableValidation(config) {
-  const forms = document.querySelectorAll(config.formSelector);
-
-  forms.forEach(form => {
-    const inputs = form.querySelectorAll(config.inputSelector);
-
-    inputs.forEach(input => {
-      input.addEventListener('input', () => {
-        checkInputValidity(input, form, config);
-      });
+  const allForms = document.querySelectorAll(config.formSelector);
+  allForms.forEach((currentForm) => {
+    currentForm.addEventListener("input", (event) => {
+      const input = event.target;
+      if (input.matches(config.inputSelector)) {
+        checkInputValidity(input, currentForm, config);
+      }
     });
+    toggleButtonState(currentForm, config);
   });
 }
 
@@ -18,25 +16,26 @@ function showInputError(errorElement, errorMessage, config) {
   errorElement.classList.add(config.errorClass);
 }
 
-function checkInputValidity(input, form, config) {
-  const errorElement = form.querySelector(`.${input.name}-input-error`);
-  
-  // Проверка на несоответствие паттерну (кастомная проверка регулярного выражения)
-  if (input.validity.patternMismatch) {
-    toggleButtonState(form, config);
-    showInputError (errorElement, input.dataset.errorMessage, config);
+function checkInputValidity(input, currentForm, config) {
+  const errorElement = currentForm.querySelector(`.${input.name}-input-error`);
+  const urlErrorMessageText = "Введите адрес сайта.";
+
+  if (input.type === "url" && !input.validity.valid) {
+    showInputError(errorElement, urlErrorMessageText, config);
+  } else if (input.validity.patternMismatch) {
+    showInputError(errorElement, input.dataset.errorMessage, config);
   } else if (!input.validity.valid) {
-    toggleButtonState(form, config);
     showInputError(errorElement, input.validationMessage, config);
   } else {
-    hideInputError(errorElement, config); // Скрываем ошибку, если поле валидно
+    hideInputError(errorElement, config);
   }
-  toggleButtonState(form, config);
+
+  toggleButtonState(currentForm, config);
 }
 
-function toggleButtonState(form, config) {
-  const submitButton = form.querySelector(config.submitButtonSelector);
-  const isFormValid = form.checkValidity();
+function toggleButtonState(currentForm, config) {
+  const submitButton = currentForm.querySelector(config.submitButtonSelector);
+  const isFormValid = currentForm.checkValidity();
 
   if (isFormValid) {
     submitButton.disabled = false;
@@ -48,6 +47,19 @@ function toggleButtonState(form, config) {
 }
 
 function hideInputError(errorElement, config) {
-  errorElement.textContent = '';
+  errorElement.textContent = "";
   errorElement.classList.remove(config.errorClass);
+}
+
+export function clearValidation(currentForm, config) {
+  const inputs = Array.from(currentForm.querySelectorAll(config.inputSelector));
+
+  inputs.forEach((input) => {
+    const errorElement = currentForm.querySelector(
+      `.${input.name}-input-error`
+    );
+    hideInputError(errorElement, config);
+  });
+  
+  toggleButtonState(currentForm, config);
 }
