@@ -1,8 +1,20 @@
-import { createCard, handleDeleteCard, handleLikeCard } from "./card.js";
-import { initialCards } from "./cards.js";
+import {
+  createCard,
+  handleDeleteCard,
+  handleLikeCard,
+  isValidCardData,
+} from "./card.js";
+import {} from "./cards.js";
 import "../pages/index.css";
 import { openPopup, closePopup } from "./modal.js";
 import { enableValidation, clearValidation } from "./validation.js";
+import {
+  getUserInfo,
+  getInitialCard,
+  updateUserInfo,
+  updateCard,
+} from "./api.js";
+import { updateUserProfile } from "./profile.js";
 
 // Константы для селекторов
 const selectors = {
@@ -15,8 +27,9 @@ const selectors = {
   popupAddCard: ".popup_type_new-card",
   nameInput: ".popup__input_type_name",
   jobInput: ".popup__input_type_description",
-  profilName: ".profile__title",
-  profilDescription: ".profile__description",
+  profileAvatar: ".profile__image",
+  profileName: ".profile__title",
+  profileDescription: ".profile__description",
   editProfileButton: ".profile__edit-button",
   addCardButton: ".profile__add-button",
   placeNameInput: "input[name='place-name']",
@@ -48,8 +61,9 @@ const profileFormElement = document.querySelector("form[name='edit-profile']");
 const cardFormElement = document.querySelector("form[name='new-place']");
 const nameInput = document.querySelector(selectors.nameInput);
 const jobInput = document.querySelector(selectors.jobInput);
-const profilName = document.querySelector(selectors.profilName);
-const profilDescription = document.querySelector(selectors.profilDescription);
+const profileAvatar = document.querySelector(selectors.profileAvatar);
+const profileName = document.querySelector(selectors.profileName);
+const profileDescription = document.querySelector(selectors.profileDescription);
 const editProfileButton = document.querySelector(selectors.editProfileButton);
 const addCardButton = document.querySelector(selectors.addCardButton);
 const placeNameInput = document.querySelector(selectors.placeNameInput);
@@ -59,20 +73,6 @@ const linkInput = document.querySelector(selectors.linkInput);
 popupTypeImage.classList.add("popup_is-animated");
 popupEditProfile.classList.add("popup_is-animated");
 popupAddCard.classList.add("popup_is-animated");
-
-/**
- * Инициализация карточек при загрузке страницы.
- * Создаются карточки из массива `initialCards` и добавляются в контейнер.
- */
-initialCards.forEach((cardData) => {
-  const cardElement = createCard(
-    cardData,
-    handleDeleteCard,
-    handleLikeCard,
-    handleImageClick
-  );
-  cardContainer.appendChild(cardElement);
-});
 
 /**
  * Обрабатывает нажатие на изображение карточки.
@@ -88,21 +88,21 @@ function handleImageClick(imageElement) {
 }
 
 /**
- * Открывает форму редактирования профиля и 
+ * Открывает форму редактирования профиля и
  * заполняет поля значениями из профиля,
  * сбрасывает ошибки валидации перед открытием формы.
  */
 editProfileButton.addEventListener("click", function () {
-  nameInput.value = profilName.textContent;
-  jobInput.value = profilDescription.textContent;
+  nameInput.value = profileName.textContent;
+  jobInput.value = profileDescription.textContent;
 
   clearValidation(profileFormElement, validationConfig);
   openPopup(popupEditProfile);
 });
 
 /**
- * Открывает popup для добавления новой карточки, 
- * отчищает поля ввода и 
+ * Открывает popup для добавления новой карточки,
+ * отчищает поля ввода и
  * сбрасывает ошибки валидации перед открытием формы.
  */
 addCardButton.addEventListener("click", function () {
@@ -134,13 +134,23 @@ function handleProfileFormSubmit(evt, textProcessor) {
   const nameValue = textProcessor(nameInput.value);
   const jobValue = textProcessor(jobInput.value);
 
-  // Обновление профиля
-  profilName.textContent = nameValue;
-  profilDescription.textContent = jobValue;
+  updateUserInfo(nameValue, jobValue)
+    .then((updatedUserData) => {
+      // Обновление профиля на странице
+      updateUserProfile(
+        profileName,
+        profileDescription,
+        profileAvatar,
+        updatedUserData
+      );
 
-  // Закрытие попапа и сброс формы
-  closePopup(popupEditProfile);
-  evt.target.reset();
+      // Закрытие попапа и сброс формы
+      closePopup(popupEditProfile);
+      evt.target.reset();
+    })
+    .catch((error) => {
+      console.error(`Ошибка при обновлении профиля: ${error}`);
+    });
 }
 
 /**
@@ -158,13 +168,24 @@ function handleCardFormSubmit(evt, textProcessor) {
 
   // Создание новой карточки и добавление в начало списка
   const cardData = { name: placeNameValue, link: linkValue };
-  cardContainer.prepend(
-    createCard(cardData, handleDeleteCard, handleLikeCard, handleImageClick)
-  );
 
-  // Закрытие попапа и сброс формы
-  closePopup(popupAddCard);
-  evt.target.reset();
+  updateCard(cardData.name, cardData.link)
+    .then((createdCard) => {
+      cardContainer.prepend(
+        createCard(
+          createdCard,
+          handleDeleteCard,
+          handleLikeCard,
+          handleImageClick
+        )
+      );
+      // Закрытие попапа и сброс формы
+      closePopup(popupAddCard);
+      evt.target.reset();
+    })
+    .catch((err) => {
+      console.error(`Ошибка при создании карточки: ${err}`);
+    });
 }
 
 // Обработка отправки формы профиля
@@ -183,3 +204,22 @@ popupCloseButton.forEach((button) => {
     closePopup(document.querySelector(".popup_is-opened"));
   });
 });
+
+Promise.all([getUserInfo(), getInitialCard()])
+  .then(([userData, cards]) => {
+    const userId = userData._id;
+
+    // Обновление профиля пользователя
+    updateUserProfile(profileName, profileDescription, profileAvatar, userData);
+
+    // Отрисовка карточек
+    cards.forEach((card) => {
+      if (isValidCardData(card)) {
+        const cardElement = createCard(card, userId);
+        cardContainer.prepend(cardElement);
+      }
+    });
+  })
+  .catch((error) => {
+    console.error(error);
+  });

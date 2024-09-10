@@ -59,3 +59,30 @@ export function handleLikeCard(likeButton) {
 export function handleDeleteCard(card) {
   card.remove();
 }
+
+export function isValidCardData(card) {
+  const { name, link } = card;
+
+  // Проверка, что имя и ссылка не пустые
+  if (!name || !link) {
+    return false;
+  }
+
+  // Дополнительно можно проверять, что ссылка является корректным URL
+  try {
+    const url = new URL(link);
+
+    // Проверка расширения URL для изображений
+    const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+    const extension = url.pathname.slice(
+      ((url.pathname.lastIndexOf(".") - 1) >>> 0) + 2
+    );
+    if (!validExtensions.includes(`.${extension.toLowerCase()}`)) {
+      return false;
+    }
+  } catch {
+    return false;
+  }
+
+  return true;
+}
