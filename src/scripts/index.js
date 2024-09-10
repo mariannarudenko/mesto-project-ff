@@ -216,7 +216,7 @@ Promise.all([getUserInfo(), getInitialCard()])
     cards.forEach((card) => {
       if (isValidCardData(card)) {
         const cardElement = createCard(card, userId);
-        cardContainer.prepend(cardElement);
+        cardContainer.append(cardElement);
       }
     });
   })
