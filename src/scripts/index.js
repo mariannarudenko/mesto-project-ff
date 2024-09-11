@@ -24,6 +24,7 @@ const selectors = {
   popupCloseButton: ".popup__close",
   popupEditProfile: ".popup_type_edit",
   popupAddCard: ".popup_type_new-card",
+  popupDeleteCard: ".popup_type_card-delete",
   nameInput: ".popup__input_type_name",
   jobInput: ".popup__input_type_description",
   profileAvatar: ".profile__image",
@@ -62,6 +63,7 @@ const captionPopup = popupTypeImage.querySelector(selectors.captionPopup);
 const popupCloseButton = document.querySelectorAll(selectors.popupCloseButton);
 const popupEditProfile = document.querySelector(selectors.popupEditProfile);
 const popupAddCard = document.querySelector(selectors.popupAddCard);
+const popupDeleteCard = document.querySelector(selectors.popupDeleteCard);
 const profileFormElement = document.querySelector("form[name='edit-profile']");
 const cardFormElement = document.querySelector("form[name='new-place']");
 const nameInput = document.querySelector(selectors.nameInput);
@@ -96,10 +98,10 @@ popupAddCard.classList.add("popup_is-animated");
  * Открывает popup с увеличенным изображением и его описанием.
  * @param {HTMLImageElement} imageElement - Элемент изображения карточки.
  */
-function handleImageClick(imageElement) {
-  imagePopup.src = imageElement.src;
-  imagePopup.alt = imageElement.alt;
-  captionPopup.textContent = imageElement.alt;
+function handleImageClick(cardData) {
+  imagePopup.src = cardData.link;
+  imagePopup.alt = cardData.name;
+  captionPopup.textContent = cardData.name;
 
   openPopup(popupTypeImage);
 }
@@ -108,15 +110,29 @@ function handleLikeCard(likeButton) {
   likeButton.classList.toggle("card__like-button_is-active");
 }
 
+let deleteCardId = null;
+let cardToDelete = null;
+
 function handleDeleteCard(cardId, card) {
-  deleteCardFromServer(cardId)
-    .then(() => {
-      card.remove();
-    })
-    .catch((error) => {
-      console.error(cardDeleteErrorText + error);
-    });
+  deleteCardId = cardId;
+  cardToDelete = card;
+  openPopup(popupDeleteCard);
 }
+
+popupDeleteCard
+  .querySelector(".popup__button")
+  .addEventListener(clickEventType, function () {
+    if (deleteCardId && cardToDelete) {
+      deleteCardFromServer(deleteCardId)
+        .then(() => {
+          cardToDelete.remove();
+          closePopup(popupDeleteCard);
+        })
+        .catch((error) => {
+          console.error(cardDeleteErrorText + error);
+        });
+    }
+  });
 
 /**
  * Открывает форму редактирования профиля и
@@ -197,15 +213,16 @@ function handleCardFormSubmit(evt, textProcessor) {
 
   addNewCardToServer(cardData.name, cardData.link)
     .then((createdCard) => {
-      cardContainer.prepend(
-        createCard(
-          selectors,
-          createdCard,
-          handleDeleteCard,
-          handleLikeCard,
-          handleImageClick
-        )
+      const newCardElement = createCard(
+        selectors,
+        createdCard,
+        loggedInUserId,
+        () => handleDeleteCard(createdCard._id, newCardElement),
+        (likeButton) => handleLikeCard(likeButton),
+        () => handleImageClick(createdCard)
       );
+
+      cardContainer.prepend(newCardElement);
 
       closePopup(popupAddCard);
       evt.target.reset();
@@ -215,7 +232,6 @@ function handleCardFormSubmit(evt, textProcessor) {
     });
 }
 
-// Обработка отправки формы профиля
 profileFormElement.addEventListener(submitEventType, function (evt) {
   handleProfileFormSubmit(evt, replaceDifficultLetter);
 });
@@ -232,6 +248,8 @@ popupCloseButton.forEach((button) => {
   });
 });
 
+let loggedInUserId;
+
 /**
  * Загружает информацию о пользователе и карточки, затем обновляет профиль
  * и отрисовывает карточки на странице.
@@ -240,8 +258,7 @@ popupCloseButton.forEach((button) => {
  */
 Promise.all([getUserInfo(), getInitialCard()])
   .then(([userData, cards]) => {
-    const currentUserId = userData._id;
-
+    loggedInUserId = userData._id; // Получаем ID пользователя из данных пользователя
     updateUserProfile(profileName, profileDescription, profileAvatar, userData);
 
     cards.forEach((cardData) => {
@@ -249,9 +266,9 @@ Promise.all([getUserInfo(), getInitialCard()])
         const cardElement = createCard(
           selectors,
           cardData,
-          currentUserId,
+          loggedInUserId,
           () => handleDeleteCard(cardData._id, cardElement),
-          (likeButton) => handleLikeCard(likeButton, cardData, currentUserId),
+          (likeButton) => handleLikeCard(likeButton),
           () => handleImageClick(cardData)
         );
         cardContainer.append(cardElement);

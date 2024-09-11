@@ -1,6 +1,6 @@
 /**
  * Обновляет информацию профиля пользователя на странице.
- * 
+ *
  * @param {HTMLElement} profileName - Элемент, отображающий имя профиля.
  * @param {HTMLElement} profileDescription - Элемент, отображающий описание профиля.
  * @param {HTMLElement} profileAvatar - Элемент, отображающий аватар профиля.
@@ -18,5 +18,4 @@ export function updateUserProfile(
   profileName.textContent = userData.name;
   profileDescription.textContent = userData.about;
   profileAvatar.style.backgroundImage = `url(${userData.avatar})`;
-
 }

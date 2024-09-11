@@ -2,11 +2,10 @@ const displayBlock = "block";
 const displayNone = "none";
 
 const clickEventType = "click";
-
 export function createCard(
   selectors,
   cardData,
-  currentUserId,
+  loggedInUserId,
   deleteCallback,
   likeCallback,
   imageClickCallback
@@ -19,19 +18,17 @@ export function createCard(
   const imageElement = cardElement.querySelector(selectors.imageElement);
   imageElement.src = cardData.link;
   imageElement.alt = cardData.name;
-
+  console.log("loggedInUserId", loggedInUserId);
   cardElement.querySelector(selectors.cardTitle).textContent = cardData.name;
-
-  handleDeleteButtonVisibility(
+  updateDeleteButtonVisibility(
     cardElement,
-    cardData.owner._id === currentUserId,
+    cardData.owner._id,
+    loggedInUserId,
     selectors
   );
-
-  const likeCountElement = cardElement.querySelector(
-    selectors.likeCountElement
-  );
-  likeCountElement.textContent = cardData.likes.length;
+  console.log("loggedInUserId", loggedInUserId);
+  cardElement.querySelector(selectors.likeCountElement).textContent =
+    cardData.likes.length;
 
   addCardEventListeners(
     cardElement,
@@ -39,15 +36,24 @@ export function createCard(
     deleteCallback,
     likeCallback,
     imageClickCallback,
-    selectors
+    selectors,
+    imageElement
   );
-
   return cardElement;
 }
 
-function handleDeleteButtonVisibility(cardElement, isOwner, selectors) {
+function updateDeleteButtonVisibility(
+  cardElement,
+  ownerId,
+  loggedInUserId,
+  selectors
+) {
   const deleteButton = cardElement.querySelector(selectors.deleteCardButton);
-  deleteButton.style.display = isOwner ? displayBlock : displayNone;
+  deleteButton.style.display = displayBlock;
+
+  if (ownerId !== loggedInUserId) {
+    deleteButton.style.display = displayNone;
+  }
 }
 
 function addCardEventListeners(
@@ -56,12 +62,13 @@ function addCardEventListeners(
   deleteCallback,
   likeCallback,
   imageClickCallback,
-  selectors
+  selectors,
+  imageElement
 ) {
   cardElement
     .querySelector(selectors.deleteCardButton)
     .addEventListener(clickEventType, () => {
-      deleteCallback(cardData.owner._id, imageElement);
+      deleteCallback(cardData._id, cardElement);
     });
 
   cardElement
@@ -70,8 +77,7 @@ function addCardEventListeners(
       likeCallback(evt.target);
     });
 
-  const imageElement = cardElement.querySelector(selectors.imageElement);
   imageElement.addEventListener(clickEventType, () => {
-    imageClickCallback(imageElement);
+    imageClickCallback(cardData);
   });
 }

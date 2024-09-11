@@ -45,7 +45,7 @@ function showInputError(errorElement, errorMessage, config) {
  * @param {Object} config - Конфигурационный объект с селекторами и классами.
  */
 function checkInputValidity(input, currentForm, config) {
-  const errorElement  = currentForm.querySelector(`.${input.name}-input-error`);
+  const errorElement = currentForm.querySelector(`.${input.name}-input-error`);
   const urlErrorMessageText = "Введите адрес сайта.";
 
   if (input.type === "url" && !input.validity.valid) {
