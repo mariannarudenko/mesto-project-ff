@@ -28,14 +28,6 @@
   transition: 0.3s;
 }
 
-.name-input-error {
-
-}
-
-.description-input-error {
-
-}
-
 .popup__input-error_active {
   opacity: 1;
 }

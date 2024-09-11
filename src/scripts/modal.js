@@ -1,6 +1,9 @@
 const openedPopupClass = "popup_is-opened";
 const escKey = "Escape";
 
+const clickEventType = "click";
+const keydownEventType = "keydown";
+
 let currentPopup = null;
 
 /**
@@ -10,8 +13,8 @@ let currentPopup = null;
 export function openPopup(popup) {
   popup.classList.add(openedPopupClass);
   currentPopup = popup;
-  document.addEventListener("keydown", closePopupOnEsc);
-  popup.addEventListener("click", closePopupOnOverlay);
+  document.addEventListener(keydownEventType, closePopupOnEsc);
+  popup.addEventListener(clickEventType, closePopupOnOverlay);
 }
 
 /**
@@ -21,8 +24,8 @@ export function openPopup(popup) {
 export function closePopup(popup) {
   popup.classList.remove(openedPopupClass);
   currentPopup = null;
-  document.removeEventListener("keydown", closePopupOnEsc);
-  popup.removeEventListener("click", closePopupOnOverlay);
+  document.removeEventListener(keydownEventType, closePopupOnEsc);
+  popup.removeEventListener(clickEventType, closePopupOnOverlay);
 }
 
 /**
