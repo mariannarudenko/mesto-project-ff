@@ -1,6 +1,7 @@
 const baseUrl = "https://nomoreparties.co/v1";
 const token = "82365ee2-2b03-4795-adca-78c4dec38143";
 const groupId = "wff-cohort-22";
+
 const headers = {
   authorization: token,
   "Content-Type": "application/json",

@@ -17,24 +17,12 @@ export function enableValidation(config) {
 
       if (input.matches(config.inputSelector)) {
         checkInputValidity(input, currentForm, config);
+        toggleButtonState(currentForm, config);
       }
     });
 
     toggleButtonState(currentForm, config);
   });
-}
-
-/**
- * Отображает сообщение об ошибке для поля ввода.
- *
- * @param {HTMLElement} errorElement - Элемент для отображения ошибки.
- * @param {string} errorMessage - Сообщение об ошибке.
- * @param {Object} config - Конфигурационный объект с классами.
- * @param {string} config.errorClass - Класс для отображения ошибки.
- */
-function showInputError(errorElement, errorMessage, config) {
-  errorElement.textContent = errorMessage;
-  errorElement.classList.add(config.errorClass);
 }
 
 /**
@@ -46,6 +34,7 @@ function showInputError(errorElement, errorMessage, config) {
  */
 function checkInputValidity(input, currentForm, config) {
   const errorElement = currentForm.querySelector(`.${input.name}-input-error`);
+
   const urlErrorMessageText = "Введите адрес сайта.";
 
   if (input.type === "url" && !input.validity.valid) {
@@ -62,6 +51,19 @@ function checkInputValidity(input, currentForm, config) {
 }
 
 /**
+ * Отображает сообщение об ошибке для поля ввода.
+ *
+ * @param {HTMLElement} errorElement - Элемент для отображения ошибки.
+ * @param {string} errorMessage - Сообщение об ошибке.
+ * @param {Object} config - Конфигурационный объект с классами.
+ * @param {string} config.errorClass - Класс для отображения ошибки.
+ */
+function showInputError(errorElement, errorMessage, config) {
+  errorElement.textContent = errorMessage;
+  errorElement.classList.add(config.errorClass);
+}
+
+/**
  * Переключает состояние кнопки отправки в зависимости от валидности формы.
  *
  * @param {HTMLElement} currentForm - Форма для проверки валидности.
@@ -71,13 +73,8 @@ function toggleButtonState(currentForm, config) {
   const submitButton = currentForm.querySelector(config.submitButtonSelector);
   const isFormValid = currentForm.checkValidity();
 
-  if (isFormValid) {
-    submitButton.disabled = false;
-    submitButton.classList.remove(config.inactiveButtonClass);
-  } else {
-    submitButton.disabled = true;
-    submitButton.classList.add(config.inactiveButtonClass);
-  }
+  submitButton.disabled = !isFormValid;
+  submitButton.classList.toggle(config.inactiveButtonClass, !isFormValid);
 }
 
 /**
@@ -102,9 +99,8 @@ export function clearValidation(currentForm, config) {
   const inputs = Array.from(currentForm.querySelectorAll(config.inputSelector));
 
   inputs.forEach((input) => {
-    const errorElement = currentForm.querySelector(
-      `.${input.name}-input-error`
-    );
+    const errorElement = currentForm.querySelector(`.${input.name}-input-error`);
+    
     hideInputError(errorElement, config);
   });
 
@@ -114,31 +110,51 @@ export function clearValidation(currentForm, config) {
 /**
  * Проверяет валидность данных карточки: наличие имени, ссылки и корректность формата изображения.
  *
- * @param {Object} card - Данные карточки.
- * @param {string} card.name - Название карточки.
- * @param {string} card.link - Ссылка на изображение карточки.
+ * @param {Object} cardData - Данные карточки.
+ * @param {string} cardData.name - Название карточки.
+ * @param {string} cardData.link - Ссылка на изображение карточки.
  * @returns {boolean} - Возвращает `true`, если данные карточки валидны, и `false` в противном случае.
  */
-export function isValidCardData(card) {
-  const { name, link } = card;
+export function isValidCardData(cardData) {
+  const { name, link } = cardData;
 
   if (!name || !link) {
     return false;
   }
 
-  try {
-    const url = new URL(link);
-    const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
-
-    const extension = url.pathname.slice(
-      ((url.pathname.lastIndexOf(".") - 1) >>> 0) + 2
-    );
-    if (!validExtensions.includes(`.${extension.toLowerCase()}`)) {
-      return false;
-    }
-  } catch {
+  if (!isValidUrl(link)) {
     return false;
   }
 
-  return true;
+  const validExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
+  const url = new URL(link);
+
+  return hasValidImageExtension(url.pathname, validExtensions);
+}
+
+/**
+ * Проверяет, является ли строка допустимым URL-адресом.
+ *
+ * @param {string} urlString - Строка URL-адреса.
+ * @returns {boolean} - Возвращает `true`, если строка является допустимым URL-адресом, и `false` в противном случае.
+ */
+function isValidUrl(urlString) {
+  try {
+    new URL(urlString);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Проверяет, имеет ли строка допустимое расширение изображения.
+ *
+ * @param {string} url - URL-адрес.
+ * @param {Array<string>} validExtensions - Список допустимых расширений файлов.
+ * @returns {boolean} - Возвращает `true`, если расширение изображения допустимо, и `false` в противном случае.
+ */
+function hasValidImageExtension(url, validExtensions) {
+  const extension = url.split('.').pop().toLowerCase();
+  return validExtensions.includes(extension);
 }
