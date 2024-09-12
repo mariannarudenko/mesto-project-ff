@@ -6,12 +6,9 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-const methodPatch = "PATCH";
-const methodPost = "POST";
-const methodDelete = "DELETE";
-
 const getUser = "users/me";
 const getCards = "cards";
+const getLikes = "likes";
 
 const errorMessageText = "Что-то пошло не так:";
 
@@ -51,7 +48,7 @@ const fetchFromServer = (endpoint) => {
  */
 const patchToServer = (endpoint, body) => {
   return fetch(`${baseUrl}/${groupId}/${endpoint}`, {
-    method: methodPatch,
+    method: "PATCH",
     headers: headers,
     body: JSON.stringify(body),
   }).then(handleResponse);
@@ -66,9 +63,23 @@ const patchToServer = (endpoint, body) => {
  */
 const postToServer = (endpoint, body) => {
   return fetch(`${baseUrl}/${groupId}/${endpoint}`, {
-    method: methodPost,
+    method: "POST",
     headers: headers,
     body: JSON.stringify(body),
+  }).then(handleResponse);
+};
+
+/**
+ * Выполняет PUT-запрос на сервер.
+ *
+ * @param {string} endpoint - Конечная точка API.
+ * @param {Object} body - Данные для отправки на сервер.
+ * @returns {Promise<JSON|Error>} - Ответ от сервера в формате JSON или ошибка.
+ */
+const putToServer = (endpoint) => {
+  return fetch(`${baseUrl}/${groupId}/${endpoint}`, {
+    method: "PUT",
+    headers: headers
   }).then(handleResponse);
 };
 
@@ -80,8 +91,8 @@ const postToServer = (endpoint, body) => {
  */
 const deleteFromServer = (endpoint) => {
   return fetch(`${baseUrl}/${groupId}/${endpoint}`, {
-    method: methodDelete,
-    headers: headers,
+    method: "DELETE",
+    headers: headers
   }).then(handleResponse);
 };
 
@@ -134,3 +145,13 @@ export const addNewCardToServer = (name, link) => {
 export const deleteCardFromServer = (_id) => {
   return deleteFromServer(`${getCards}/${_id}`);
 };
+
+/**
+ * Устанавливает лайк для карточки.
+ *
+ * @param {string} cardId - Идентификатор карточки для лайка.
+ * @returns {Promise<JSON|Error>} - Ответ от сервера в формате JSON или ошибка.
+ */
+export const setCardLike = (cardId ) => {
+  return putToServer(`${getCards}/${getLikes}/${cardId}`);
+}

@@ -12,6 +12,7 @@ import {
   updateUserInfo,
   addNewCardToServer,
   deleteCardFromServer,
+  setCardLike,
 } from "./api.js";
 import { updateUserProfile } from "./profile.js";
 
@@ -35,7 +36,7 @@ const selectors = {
   placeNameInput: "input[name='place-name']",
   linkInput: "input[name='link']",
   cardTemplate: "#card-template",
-  imageElement: ".card__image",
+  cardImage: ".card__image",
   cardTitle: ".card__title",
   deleteCardButton: ".card__delete-button",
   likeCountElement: ".card__like-count",
@@ -76,7 +77,7 @@ const addCardButton = document.querySelector(selectors.addCardButton);
 const placeNameInput = document.querySelector(selectors.placeNameInput);
 const linkInput = document.querySelector(selectors.linkInput);
 const cardTemplate = document.querySelector(selectors.cardTemplate);
-const imageElement = document.querySelector(selectors.imageElement);
+const cardImage = document.querySelector(selectors.cardImage);
 const cardTitle = document.querySelector(selectors.cardTitle);
 const deleteCardButton = document.querySelector(selectors.deleteCardButton);
 const likeCountElement = document.querySelector(selectors.likeCountElement);
@@ -85,9 +86,7 @@ const likeCardButton = document.querySelector(selectors.likeCardButton);
 const clickEventType = "click";
 const submitEventType = "submit";
 
-const profileUpdateErrorText = "Ошибка при обновлении профиля:";
-const cardCreateErrorText = "Ошибка при создании карточки:";
-const cardDeleteErrorText = "Ошибка удаления карточки:";
+const errorText = "Ошибка:";
 
 /** Добавление классов анимации для всех попапов */
 popupTypeImage.classList.add("popup_is-animated");
@@ -96,7 +95,10 @@ popupAddCard.classList.add("popup_is-animated");
 
 /**
  * Открывает popup с увеличенным изображением и его описанием.
- * @param {HTMLImageElement} imageElement - Элемент изображения карточки.
+ *
+ * @param {Object} cardData - Данные карточки.
+ * @param {string} cardData.link - Ссылка на изображение карточки.
+ * @param {string} cardData.name - Название карточки, используется как подпись.
  */
 function handleImageClick(cardData) {
   imagePopup.src = cardData.link;
@@ -106,8 +108,20 @@ function handleImageClick(cardData) {
   openPopup(popupTypeImage);
 }
 
-function handleLikeCard(likeButton) {
-  likeButton.classList.toggle("card__like-button_is-active");
+function handleLikeCard(cardId, cardElement) {
+  const currentLikeButton = cardElement.querySelector(selectors.likeCardButton);
+  const currentLikeCounter = cardElement.querySelector(
+    selectors.likeCountElement
+  );
+  setCardLike(cardId)
+    .then((res) => {
+      currentLikeButton.classList.toggle("card__like-button_is-active");
+      currentLikeCounter.textContent = res.likes.length;
+    })
+    .catch((error) => {
+      console.error(errorText + error);
+      currentLikeButton.classList.toggle("card__like-button_is-active");
+    });
 }
 
 let deleteCardId = null;
@@ -129,7 +143,7 @@ popupDeleteCard
           closePopup(popupDeleteCard);
         })
         .catch((error) => {
-          console.error(cardDeleteErrorText + error);
+          console.error(errorText + error);
         });
     }
   });
@@ -194,7 +208,7 @@ function handleProfileFormSubmit(evt, textProcessor) {
       evt.target.reset();
     })
     .catch((error) => {
-      console.error(profileUpdateErrorText + error);
+      console.error(errorText + error);
     });
 }
 /**
@@ -218,7 +232,7 @@ function handleCardFormSubmit(evt, textProcessor) {
         createdCard,
         loggedInUserId,
         () => handleDeleteCard(createdCard._id, newCardElement),
-        (likeButton) => handleLikeCard(likeButton),
+        () => handleLikeCard(createdCard._id, newCardElement),
         () => handleImageClick(createdCard)
       );
 
@@ -228,7 +242,7 @@ function handleCardFormSubmit(evt, textProcessor) {
       evt.target.reset();
     })
     .catch((err) => {
-      console.error(cardCreateErrorText + err);
+      console.error(errorText + err);
     });
 }
 
@@ -258,7 +272,7 @@ let loggedInUserId;
  */
 Promise.all([getUserInfo(), getInitialCard()])
   .then(([userData, cards]) => {
-    loggedInUserId = userData._id; // Получаем ID пользователя из данных пользователя
+    loggedInUserId = userData._id;
     updateUserProfile(profileName, profileDescription, profileAvatar, userData);
 
     cards.forEach((cardData) => {
@@ -268,7 +282,7 @@ Promise.all([getUserInfo(), getInitialCard()])
           cardData,
           loggedInUserId,
           () => handleDeleteCard(cardData._id, cardElement),
-          (likeButton) => handleLikeCard(likeButton),
+          () => handleLikeCard(cardData._id, cardElement),
           () => handleImageClick(cardData)
         );
         cardContainer.append(cardElement);
