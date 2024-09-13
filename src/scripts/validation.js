@@ -36,7 +36,7 @@ function checkInputValidity(input, currentForm, config) {
   const errorElement = currentForm.querySelector(`.${input.name}-input-error`);
 
   const urlErrorMessageText = "Введите адрес сайта.";
-
+  
   if (input.type === "url" && !input.validity.valid) {
     showInputError(errorElement, urlErrorMessageText, config);
   } else if (input.validity.patternMismatch) {
@@ -99,8 +99,10 @@ export function clearValidation(currentForm, config) {
   const inputs = Array.from(currentForm.querySelectorAll(config.inputSelector));
 
   inputs.forEach((input) => {
-    const errorElement = currentForm.querySelector(`.${input.name}-input-error`);
-    
+    const errorElement = currentForm.querySelector(
+      `.${input.name}-input-error`
+    );
+
     hideInputError(errorElement, config);
   });
 

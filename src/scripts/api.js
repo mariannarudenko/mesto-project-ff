@@ -8,6 +8,7 @@ const headers = {
 };
 
 const getUser = "users/me";
+const getAvatar = "users/me/avatar";
 const getCards = "cards";
 const getLikes = "likes";
 
@@ -55,6 +56,7 @@ const patchToServer = (endpoint, body) => {
   }).then(handleResponse);
 };
 
+
 /**
  * Выполняет POST-запрос на сервер с передачей данных.
  *
@@ -80,7 +82,7 @@ const postToServer = (endpoint, body) => {
 const putToServer = (endpoint) => {
   return fetch(`${baseUrl}/${groupId}/${endpoint}`, {
     method: "PUT",
-    headers: headers
+    headers: headers,
   }).then(handleResponse);
 };
 
@@ -93,7 +95,7 @@ const putToServer = (endpoint) => {
 const deleteFromServer = (endpoint) => {
   return fetch(`${baseUrl}/${groupId}/${endpoint}`, {
     method: "DELETE",
-    headers: headers
+    headers: headers,
   }).then(handleResponse);
 };
 
@@ -153,6 +155,26 @@ export const deleteCardFromServer = (_id) => {
  * @param {string} cardId - Идентификатор карточки для лайка.
  * @returns {Promise<JSON|Error>} - Ответ от сервера в формате JSON или ошибка.
  */
-export const setCardLike = (cardId ) => {
+export const setCardLike = (cardId) => {
   return putToServer(`${getCards}/${getLikes}/${cardId}`);
-}
+};
+
+/**
+ * Снимает лайк с карточки.
+ *
+ * @param {string} cardId - Идентификатор карточки для лайка.
+ * @returns {Promise<JSON|Error>} - Ответ от сервера в формате JSON или ошибка.
+ */
+export const unsetCardLike = (cardId) => {
+  return deleteFromServer(`${getCards}/${getLikes}/${cardId}`);
+};
+
+/**
+ * Обновляет аватар профиля.
+ *
+ * @param {string} avatar - Идентификатор карточки для лайка.
+ * @returns {Promise<JSON|Error>} - Ответ от сервера в формате JSON или ошибка.
+ */
+export const updateAvatar = (avatar) => {
+  return patchToServer(getAvatar, avatar);
+};

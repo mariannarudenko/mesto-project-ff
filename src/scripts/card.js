@@ -95,13 +95,13 @@ function updateDeleteButtonVisibility(deleteButton, isOwner) {
  * @param {string} loggedInUserId - Идентификатор текущего пользователя.
  */
 function setLikeButtonToggle(likeButton, cardData, loggedInUserId) {
+  const likeButtonIsActive = "card__like-button_is-active";
+
   const isLikedByLoggedUser = cardData.likes.some(
     (like) => like._id === loggedInUserId
   );
-  likeButton.classList.toggle(
-    "card__like-button_is-active",
-    isLikedByLoggedUser
-  );
+
+  likeButton.classList.toggle(likeButtonIsActive, isLikedByLoggedUser);
 }
 
 /**
@@ -144,7 +144,11 @@ function addCardEventListeners(
     likeCallback(cardData._id, cardElement);
   });
 
-  cardImage.addEventListener(clickEventType, () => {
-    imageClickCallback(cardData);
-  });
+  cardImage.addEventListener(
+    clickEventType,
+    () => {
+      imageClickCallback(cardData);
+    },
+    { once: true }
+  );
 }
