@@ -7,7 +7,9 @@ import {
   deleteCardFromServer,
   setCardLike,
   unsetCardLike,
-  updateAvatar
+  updateAvatar,
+  isValidImageUrl,
+  isValidAvatarUrl,
 } from "./api.js";
 import { createCard } from "./card.js";
 import { openPopup, closePopup } from "./modal.js";
@@ -15,7 +17,7 @@ import { updateUserProfile, updateUserAvatar } from "./profile.js";
 import {
   enableValidation,
   clearValidation,
-  isValidCardData
+  isValidCardData,
 } from "./validation.js";
 
 /**
@@ -148,6 +150,34 @@ addAnimationClass(
 );
 
 /**
+ * Обновляет кнопку внутри попапа, чтобы показать, что идет процесс сохранения.
+ * Меняет текст кнопки на "Сохранение..." и отключает её.
+ *
+ * @param {HTMLElement} popup - Элемент попапа, содержащий кнопку.
+ */
+
+let dataset;
+
+function addUxOnButton(popup) {
+  const button = popup.querySelector(".popup__button");
+  dataset = button.textContent;
+  button.textContent = "Сохранение...";
+  button.disabled = true;
+}
+
+/**
+ * Восстанавливает исходное состояние кнопки после завершения процесса сохранения.
+ * Возвращает текст кнопки и включает её обратно.
+ *
+ * @param {HTMLElement} popup - Элемент попапа, содержащий кнопку.
+ */
+function removeUxOnButton(popup) {
+  const button = popup.querySelector(".popup__button");
+  button.textContent = dataset;
+  button.disabled = false;
+}
+
+/**
  * Обрабатывает клик по изображению, обновляя попап с изображением и открывая его.
  * @param {string} name - Название изображения, которое будет отображаться в подписи попапа.
  * @param {string} link - Ссылка на изображение, которое будет отображаться в попапе.
@@ -232,12 +262,16 @@ popupDeleteCard
   .querySelector(".popup__button")
   .addEventListener(clickEventType, function () {
     if (deleteCardId && cardToDelete) {
+      addUxOnButton(popupDeleteCard);
       deleteCardFromServer(deleteCardId)
         .then(() => {
           cardToDelete.remove();
           closePopup(popupDeleteCard);
         })
-        .catch(handleError);
+        .catch(handleError)
+        .finally(() => {
+          removeUxOnButton(popupDeleteCard);
+        });
     }
   });
 
@@ -248,7 +282,7 @@ popupDeleteCard
  */
 editAvatarButton.addEventListener(clickEventType, function () {
   avatarInput.value = "";
-  
+
   clearValidation(avatarFormElement, validationConfig);
   openPopup(popupChangeAvatar);
 });
@@ -293,21 +327,24 @@ function replaceDifficultLetter(text) {
  *
  * @param {Event} evt - Событие сабмита формы.
  */
+
 function handleAvatarFormSubmit(evt) {
   evt.preventDefault();
-  const userData = {avatar: avatarInput.value};
+  addUxOnButton(popupChangeAvatar);
+
+  const userData = { avatar: avatarInput.value };
 
   updateAvatar(userData)
     .then((updatedUserAvatar) => {
-      updateUserAvatar(
-        profileAvatar,
-        updatedUserAvatar
-      );
+      updateUserAvatar(profileAvatar, updatedUserAvatar);
 
       closePopup(popupChangeAvatar);
       evt.target.reset();
     })
-    .catch(handleError);
+    .catch(handleError)
+    .finally(() => {
+      removeUxOnButton(popupChangeAvatar);
+    });
 }
 
 /**
@@ -318,22 +355,22 @@ function handleAvatarFormSubmit(evt) {
  */
 function handleProfileFormSubmit(evt, textProcessor) {
   evt.preventDefault();
+  addUxOnButton(popupEditProfile);
 
   const nameValue = textProcessor(nameInput.value);
   const jobValue = textProcessor(jobInput.value);
 
   updateUserInfo(nameValue, jobValue)
     .then((updatedUserData) => {
-      updateUserProfile(
-        profileName,
-        profileDescription,
-        updatedUserData
-      );
+      updateUserProfile(profileName, profileDescription, updatedUserData);
 
       closePopup(popupEditProfile);
       evt.target.reset();
     })
-    .catch(handleError);
+    .catch(handleError)
+    .finally(() => {
+      removeUxOnButton(popupEditProfile);
+    });
 }
 
 /**
@@ -343,7 +380,7 @@ function handleProfileFormSubmit(evt, textProcessor) {
  */
 function handleCardFormSubmit(evt, textProcessor) {
   evt.preventDefault();
-
+  addUxOnButton(popupAddCard);
   const placeNameValue = textProcessor(placeNameInput.value);
   const linkValue = textProcessor(linkInput.value);
 
@@ -357,7 +394,7 @@ function handleCardFormSubmit(evt, textProcessor) {
         loggedInUserId,
         () => handleDeleteCard(createdCard._id, newCardElement),
         () => handleLikeCard(createdCard._id, newCardElement),
-        () => handleImageClick(createdCard)
+        () => handleImageClick(createdCard.name, createdCard.link)
       );
 
       cardContainer.prepend(newCardElement);
@@ -365,7 +402,10 @@ function handleCardFormSubmit(evt, textProcessor) {
       closePopup(popupAddCard);
       evt.target.reset();
     })
-    .catch(handleError);
+    .catch(handleError)
+    .finally(() => {
+      removeUxOnButton(popupAddCard);
+    });
 }
 
 /**

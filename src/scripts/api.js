@@ -56,7 +56,6 @@ const patchToServer = (endpoint, body) => {
   }).then(handleResponse);
 };
 
-
 /**
  * Выполняет POST-запрос на сервер с передачей данных.
  *
@@ -76,7 +75,6 @@ const postToServer = (endpoint, body) => {
  * Выполняет PUT-запрос на сервер.
  *
  * @param {string} endpoint - Конечная точка API.
- * @param {Object} body - Данные для отправки на сервер.
  * @returns {Promise<JSON|Error>} - Ответ от сервера в формате JSON или ошибка.
  */
 const putToServer = (endpoint) => {
@@ -178,3 +176,4 @@ export const unsetCardLike = (cardId) => {
 export const updateAvatar = (avatar) => {
   return patchToServer(getAvatar, avatar);
 };
+

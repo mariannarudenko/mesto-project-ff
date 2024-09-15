@@ -17,7 +17,7 @@
 .popup__button_disabled {
   cursor: not-allowed;
   color: #00000033;
-  background: transparent;
+  background: white;
   border: 1px solid #00000033; 
   pointer-events: none;
 }
