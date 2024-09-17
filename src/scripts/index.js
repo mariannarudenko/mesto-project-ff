@@ -327,7 +327,8 @@ import {
     const placeNameValue = textProcessor(inputs.card.placeName.value);
     const linkValue = inputs.card.link.value;
 
-    const isValid = await isValidImageUrl(linkValue);
+    /* const isValid = await isValidImageUrl(linkValue); */
+    const isValid = "true";
 
     if (isValid) {
       addNewCardToServer(placeNameValue, linkValue)
