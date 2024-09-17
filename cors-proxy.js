@@ -1,4 +1,4 @@
-const corsAnywhere = require('cors-anywhere');
+/* const corsAnywhere = require('cors-anywhere');
 const port = 3000;
 
 corsAnywhere.createServer({
@@ -7,4 +7,4 @@ corsAnywhere.createServer({
   removeHeaders: ['cookie', 'cookie2']
 }).listen(port, () => {
   console.log(`CORS Proxy server running on http://localhost:${port}`);
-});
+}); */

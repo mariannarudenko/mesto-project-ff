@@ -3,7 +3,7 @@ import {
   getUserInfo,
   getInitialCard,
   updateUserInfo,
-  isValidImageUrl,
+  /* isValidImageUrl, */
   addNewCardToServer,
   deleteCardFromServer,
   setCardLike,
@@ -41,9 +41,7 @@ import {
 } from "../utils/constants.js";
 import {
   handleFirstTab,
-  handleMouseDown,
-  renderLoading,
-  handleSubmit,
+  handleMouseDown
 } from "../utils/utils.js";
 
 (function () {
@@ -245,7 +243,9 @@ import {
     addUxOnButton(popupChangeAvatar);
 
     const linkValue = inputs.avatar.url.value;
-    const isValid = await isValidImageUrl(linkValue);
+    /* const isValid = await isValidImageUrl(linkValue); */
+    const isValid = "true";
+    
 
     if (isValid) {
       try {

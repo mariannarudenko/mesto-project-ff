@@ -103,7 +103,7 @@ const remove = (endpoint) =>
  * @param {string} url - URL изображения.
  * @returns {Promise<boolean>} - Возвращает true, если URL действителен и указывает на изображение, иначе false.
  */
-export async function isValidImageUrl(url) {
+/* export async function isValidImageUrl(url) {
   const proxyUrl = "http://localhost:3000/";
   const fullUrl = proxyUrl + url;
 
@@ -119,7 +119,7 @@ export async function isValidImageUrl(url) {
   } catch (error) {
     handleResponse(error);
   }
-}
+} */
 
 // Получает информацию о пользователе с сервера.
 export const getUserInfo = () => get("users/me");
