@@ -5,7 +5,6 @@
  * @param {string} config.formSelector - Селектор формы.
  * @param {string} config.inputSelector - Селектор поля ввода.
  * @param {string} config.submitButtonSelector - Селектор кнопки отправки формы.
- * @param {string} config.inactiveButtonClass - Класс для неактивной кнопки отправки.
  * @param {string} config.errorClass - Класс для отображения ошибки.
  */
 export function enableValidation(config) {
@@ -32,15 +31,19 @@ export function enableValidation(config) {
  * @param {HTMLElement} currentForm - Форма, содержащая поле ввода.
  * @param {Object} config - Конфигурационный объект с селекторами и классами.
  */
-function checkInputValidity(input, currentForm, config) {
+export function checkInputValidity(
+  input,
+  currentForm,
+  config,
+  isValid = "none"
+) {
+  const urlErrorMessage = "Введите корректную ссылку на картинку.";
   const errorElement = currentForm.querySelector(`.${input.name}-input-error`);
 
-  const urlErrorMessageText = "Введите адрес сайта.";
-  
-  if (input.type === "url" && !input.validity.valid) {
-    showInputError(errorElement, urlErrorMessageText, config);
-  } else if (input.validity.patternMismatch) {
+  if (input.validity.patternMismatch) {
     showInputError(errorElement, input.dataset.errorMessage, config);
+  } else if (!isValid) {
+    showInputError(errorElement, urlErrorMessage, config);
   } else if (!input.validity.valid) {
     showInputError(errorElement, input.validationMessage, config);
   } else {
@@ -68,13 +71,14 @@ function showInputError(errorElement, errorMessage, config) {
  *
  * @param {HTMLElement} currentForm - Форма для проверки валидности.
  * @param {Object} config - Конфигурационный объект с селекторами и классами.
+ * @param {string} config.inactiveButton - Класс для неактивной кнопки отправки.
  */
 function toggleButtonState(currentForm, config) {
   const submitButton = currentForm.querySelector(config.submitButtonSelector);
   const isFormValid = currentForm.checkValidity();
 
   submitButton.disabled = !isFormValid;
-  submitButton.classList.toggle(config.inactiveButtonClass, !isFormValid);
+  submitButton.classList.toggle(config.inactiveButton, !isFormValid);
 }
 
 /**
@@ -157,6 +161,6 @@ function isValidUrl(urlString) {
  * @returns {boolean} - Возвращает `true`, если расширение изображения допустимо, и `false` в противном случае.
  */
 function hasValidImageExtension(url, validExtensions) {
-  const extension = url.split('.').pop().toLowerCase();
+  const extension = url.split(".").pop().toLowerCase();
   return validExtensions.includes(extension);
 }

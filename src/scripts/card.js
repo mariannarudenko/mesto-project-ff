@@ -1,9 +1,6 @@
-const clickEventType = "click";
-
 /**
  * Создает элемент карточки и добавляет все необходимые обработчики.
  *
- * @param {Object} selectors - Объект с CSS-селекторами.
  * @param {Object} cardData - Данные карточки.
  * @param {string} loggedInUserId - Идентификатор текущего пользователя.
  * @param {Function} deleteCallback - Коллбэк для удаления карточки.
@@ -12,20 +9,22 @@ const clickEventType = "click";
  * @returns {HTMLElement} - Возвращает DOM-элемент карточки.
  */
 export function createCard(
-  selectors,
   cardData,
-  loggedInUserId,
-  deleteCallback,
-  likeCallback,
-  imageClickCallback
+  {
+    cardConfig,
+    loggedInUserId,
+    deleteCallback,
+    likeCallback,
+    imageClickCallback,
+  }
 ) {
-  const cardElement = createCardElement(selectors.cardTemplate);
+  const cardElement = createCardElement(cardConfig);
 
-  const cardImage = cardElement.querySelector(selectors.cardImage);
-  const cardTitle = cardElement.querySelector(selectors.cardTitle);
-  const deleteButton = cardElement.querySelector(selectors.deleteCardButton);
-  const likeButton = cardElement.querySelector(selectors.likeCardButton);
-  const likeCount = cardElement.querySelector(selectors.likeCountElement);
+  const cardImage = cardElement.querySelector(cardConfig.cardImage);
+  const cardTitle = cardElement.querySelector(cardConfig.cardTitle);
+  const deleteButton = cardElement.querySelector(cardConfig.deleteCardButton);
+  const likeButton = cardElement.querySelector(cardConfig.likeCardButton);
+  const likeCount = cardElement.querySelector(cardConfig.likeCount);
 
   setCardData(cardImage, cardTitle, cardData);
 
@@ -38,11 +37,9 @@ export function createCard(
   setLikeButtonToggle(likeButton, cardData, loggedInUserId);
 
   addCardEventListeners(
-    cardElement,
     deleteButton,
     likeButton,
     cardImage,
-    cardData,
     deleteCallback,
     likeCallback,
     imageClickCallback
@@ -54,12 +51,18 @@ export function createCard(
 /**
  * Создает DOM-элемент карточки на основе шаблона.
  *
- * @param {string} cardTemplate - CSS-селектор шаблона карточки.
+ * @param {string} cardConfig - объект CSS-селекторов карточки.
  * @returns {HTMLElement} - Возвращает элемент карточки.
  */
-function createCardElement(cardTemplate) {
-  const cardTemplateContent = document.querySelector(cardTemplate).content;
-  return cardTemplateContent.querySelector(".places__item").cloneNode(true);
+function createCardElement(cardConfig) {
+  const cardTemplateContent = document.querySelector(
+    cardConfig.cardTemplate
+  ).content;
+  const cardTemplateElement = cardTemplateContent.querySelector(
+    cardConfig.cardElement
+  );
+
+  return cardTemplateElement.cloneNode(true);
 }
 
 /**
@@ -117,38 +120,24 @@ function showLikeCount(likeCount, likes) {
 /**
  * Добавляет обработчики событий для карточки (удаление, лайк, клик по изображению).
  *
- * @param {HTMLElement} cardElement - Элемент карточки.
  * @param {HTMLElement} deleteButton - Кнопка удаления карточки.
  * @param {HTMLElement} likeButton - Кнопка лайка карточки.
  * @param {HTMLImageElement} cardImage - Элемент изображения карточки.
- * @param {Object} cardData - Данные карточки.
  * @param {Function} deleteCallback - Коллбэк для удаления карточки.
  * @param {Function} likeCallback - Коллбэк для лайка карточки.
  * @param {Function} imageClickCallback - Коллбэк для клика на изображение карточки.
  */
 function addCardEventListeners(
-  cardElement,
   deleteButton,
   likeButton,
   cardImage,
-  cardData,
   deleteCallback,
   likeCallback,
   imageClickCallback
 ) {
-  deleteButton.addEventListener(clickEventType, () => {
-    deleteCallback(cardData._id, cardElement);
-  });
+  deleteButton.addEventListener("click", deleteCallback);
 
-  likeButton.addEventListener(clickEventType, () => {
-    likeCallback(cardData._id, cardElement);
-  });
+  likeButton.addEventListener("click", likeCallback);
 
-  cardImage.addEventListener(
-    clickEventType,
-    () => {
-      imageClickCallback(cardData);
-    },
-    { once: true }
-  );
+  cardImage.addEventListener("click", imageClickCallback);
 }

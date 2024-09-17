@@ -7,24 +7,27 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-const getUser = "users/me";
-const getAvatar = "users/me/avatar";
-const getCards = "cards";
-const getLikes = "likes";
-
 const errorMessageText = "Что-то пошло не так:";
 
-/**
- * Обрабатывает ответ сервера, проверяя статус и возвращая JSON или ошибку.
- *
- * @param {Response} res - Ответ от сервера.
- * @returns {Promise<JSON|Error>} - Обработанный ответ в формате JSON или ошибка.
- */
 const handleResponse = (res) => {
   if (!res.ok) {
-    return Promise.reject(errorMessageText + res.status);
+    return Promise.reject(`${errorMessageText} ${res.status}`);
   }
   return res.json();
+};
+
+/**
+ * Универсальная функция для выполнения запросов к серверу.
+ *
+ * @param {string} endpoint - Конечная точка API.
+ * @param {Object} options - Опции для выполнения запроса (метод, заголовки, тело и т.д.).
+ * @returns {Promise<JSON|Error>} - Ответ в формате JSON или ошибка.
+ */
+const request = (endpoint, options = {}) => {
+  return fetch(`${baseUrl}/${groupId}/${endpoint}`, {
+    headers: headers,
+    ...options,
+  }).then(handleResponse);
 };
 
 /**
@@ -33,28 +36,18 @@ const handleResponse = (res) => {
  * @param {string} endpoint - Конечная точка API.
  * @returns {Promise<JSON|Error>} - Ответ от сервера в формате JSON или ошибка.
  */
-const fetchFromServer = (endpoint) => {
-  return fetch(`${baseUrl}/${groupId}/${endpoint}`, {
-    headers: {
-      authorization: token,
-    },
-  }).then(handleResponse);
-};
+const get = (endpoint) => request(endpoint);
 
 /**
- * Выполняет PATCH-запрос на сервер с передачей данных.
+ * Выполняет HEAD-запрос на сервер.
  *
  * @param {string} endpoint - Конечная точка API.
- * @param {Object} body - Данные для отправки на сервер.
  * @returns {Promise<JSON|Error>} - Ответ от сервера в формате JSON или ошибка.
  */
-const patchToServer = (endpoint, body) => {
-  return fetch(`${baseUrl}/${groupId}/${endpoint}`, {
-    method: "PATCH",
-    headers: headers,
-    body: JSON.stringify(body),
-  }).then(handleResponse);
-};
+const head = (endpoint) =>
+  fetch(endpoint, {
+    method: "HEAD",
+  });
 
 /**
  * Выполняет POST-запрос на сервер с передачей данных.
@@ -63,13 +56,24 @@ const patchToServer = (endpoint, body) => {
  * @param {Object} body - Данные для отправки на сервер.
  * @returns {Promise<JSON|Error>} - Ответ от сервера в формате JSON или ошибка.
  */
-const postToServer = (endpoint, body) => {
-  return fetch(`${baseUrl}/${groupId}/${endpoint}`, {
+const post = (endpoint, body) =>
+  request(endpoint, {
     method: "POST",
-    headers: headers,
     body: JSON.stringify(body),
-  }).then(handleResponse);
-};
+  });
+
+/**
+ * Выполняет PATCH-запрос на сервер с передачей данных.
+ *
+ * @param {string} endpoint - Конечная точка API.
+ * @param {Object} body - Данные для отправки на сервер.
+ * @returns {Promise<JSON|Error>} - Ответ от сервера в формате JSON или ошибка.
+ */
+const patch = (endpoint, body) =>
+  request(endpoint, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
 
 /**
  * Выполняет PUT-запрос на сервер.
@@ -77,103 +81,65 @@ const postToServer = (endpoint, body) => {
  * @param {string} endpoint - Конечная точка API.
  * @returns {Promise<JSON|Error>} - Ответ от сервера в формате JSON или ошибка.
  */
-const putToServer = (endpoint) => {
-  return fetch(`${baseUrl}/${groupId}/${endpoint}`, {
+const put = (endpoint) =>
+  request(endpoint, {
     method: "PUT",
-    headers: headers,
-  }).then(handleResponse);
-};
+  });
 
 /**
- * Выполняет DELETE-запрос к серверу по указанному конечному пути.
+ * Выполняет DELETE-запрос на сервер.
  *
- * @param {string} endpoint - Конечная точка API для выполнения DELETE-запроса.
+ * @param {string} endpoint - Конечная точка API.
  * @returns {Promise<JSON|Error>} - Ответ от сервера в формате JSON или ошибка.
  */
-const deleteFromServer = (endpoint) => {
-  return fetch(`${baseUrl}/${groupId}/${endpoint}`, {
+const remove = (endpoint) =>
+  request(endpoint, {
     method: "DELETE",
-    headers: headers,
-  }).then(handleResponse);
-};
+  });
 
 /**
- * Получает информацию о пользователе с сервера.
+ * Проверяет, является ли URL действительным изображением.
  *
- * @returns {Promise<JSON|Error>} - Информация о пользователе в формате JSON или ошибка.
  */
-export const getUserInfo = () => {
-  return fetchFromServer(getUser);
-};
+export async function isValidImageUrl(url) {
+  const proxyUrl = "http://localhost:3000/";
+  const fullUrl = proxyUrl + url;
 
-/**
- * Получает начальные карточки с сервера.
- *
- * @returns {Promise<JSON|Error>} - Карточки в формате JSON или ошибка.
- */
-export const getInitialCard = () => {
-  return fetchFromServer(getCards);
-};
+  try {
+    const response = await head(fullUrl);
 
-/**
- * Обновляет информацию о пользователе на сервере.
- *
- * @param {string} name - Имя пользователя.
- * @param {string} about - Описание пользователя.
- * @returns {Promise<JSON|Error>} - Обновленная информация о пользователе или ошибка.
- */
-export const updateUserInfo = (name, about) => {
-  return patchToServer(getUser, { name, about });
-};
+    if (!response.ok) {
+      return false;
+    }
 
-/**
- * Добавляет новую карточку на сервер.
- *
- * @param {string} name - Название карточки.
- * @param {string} link - Ссылка на изображение карточки.
- * @returns {Promise<JSON|Error>} - Созданная карточка в формате JSON или ошибка.
- */
-export const addNewCardToServer = (name, link) => {
-  return postToServer(getCards, { name, link });
-};
+    const contentType = response.headers.get("Content-Type");
+    return contentType && contentType.startsWith("image/");
+  } catch (error) {
+    handleResponse(error);
+  }
+}
 
-/**
- * Удаляет карточку с сервера.
- *
- * @param {string} _id - Идентификатор карты, которую нужно удалить.
- * @returns {Promise<JSON|Error>} - Удаление карточки или ошибка.
- */
-export const deleteCardFromServer = (_id) => {
-  return deleteFromServer(`${getCards}/${_id}`);
-};
+// Получает информацию о пользователе с сервера.
+export const getUserInfo = () => get("users/me");
 
-/**
- * Устанавливает лайк для карточки.
- *
- * @param {string} cardId - Идентификатор карточки для лайка.
- * @returns {Promise<JSON|Error>} - Ответ от сервера в формате JSON или ошибка.
- */
-export const setCardLike = (cardId) => {
-  return putToServer(`${getCards}/${getLikes}/${cardId}`);
-};
+// Получает начальные карточки с сервера.
+export const getInitialCard = () => get("cards");
 
-/**
- * Снимает лайк с карточки.
- *
- * @param {string} cardId - Идентификатор карточки для лайка.
- * @returns {Promise<JSON|Error>} - Ответ от сервера в формате JSON или ошибка.
- */
-export const unsetCardLike = (cardId) => {
-  return deleteFromServer(`${getCards}/${getLikes}/${cardId}`);
-};
+// Обновляет информацию о пользователе на сервере.
+export const updateUserInfo = (name, about) =>
+  patch("users/me", { name, about });
 
-/**
- * Обновляет аватар профиля.
- *
- * @param {string} avatar - Идентификатор карточки для лайка.
- * @returns {Promise<JSON|Error>} - Ответ от сервера в формате JSON или ошибка.
- */
-export const updateAvatar = (avatar) => {
-  return patchToServer(getAvatar, avatar);
-};
+// Добавляет новую карточку на сервер.
+export const addNewCardToServer = (name, link) => post("cards", { name, link });
 
+// Удаляет карточку с сервера.
+export const deleteCardFromServer = (_id) => remove(`cards/${_id}`);
+
+// Устанавливает лайк для карточки.
+export const setCardLike = (cardId) => put(`cards/likes/${cardId}`);
+
+// Снимает лайк с карточки.
+export const unsetCardLike = (cardId) => remove(`cards/likes/${cardId}`);
+
+// Обновляет аватар профиля.
+export const updateAvatar = (avatar) => patch("users/me/avatar", { avatar });
