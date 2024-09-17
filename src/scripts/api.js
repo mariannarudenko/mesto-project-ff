@@ -100,6 +100,8 @@ const remove = (endpoint) =>
 /**
  * Проверяет, является ли URL действительным изображением.
  *
+ * @param {string} url - URL изображения.
+ * @returns {Promise<boolean>} - Возвращает true, если URL действителен и указывает на изображение, иначе false.
  */
 export async function isValidImageUrl(url) {
   const proxyUrl = "http://localhost:3000/";

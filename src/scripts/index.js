@@ -39,7 +39,12 @@ import {
   popupChangeAvatar,
   popupCloseButtons,
 } from "../utils/constants.js";
-import { handleFirstTab, handleMouseDown } from "../utils/utils.js";
+import {
+  handleFirstTab,
+  handleMouseDown,
+  renderLoading,
+  handleSubmit,
+} from "../utils/utils.js";
 
 (function () {
   const errorText = "Ошибка:";
@@ -122,8 +127,8 @@ import { handleFirstTab, handleMouseDown } from "../utils/utils.js";
 
   /**
    * Переключает состояние кнопки лайка и обновляет счётчик лайков.
-   * @param {boolean} isActive - Флаг, указывающий, активна ли кнопка лайка.
-   * @param {number} likeCount - Количество лайков, которое нужно отобразить.
+   * @param {string} cardId - Идентификатор карточки, лайк которой нужно изменить.
+   * @param {HTMLElement} cardElement - Элемент карточки, на которую нужно изменить состояние лайка.
    */
   function handleLikeCard(cardId, cardElement) {
     const currentLikeButton = cardElement.querySelector(
@@ -243,26 +248,26 @@ import { handleFirstTab, handleMouseDown } from "../utils/utils.js";
     const isValid = await isValidImageUrl(linkValue);
 
     if (isValid) {
-        try {
-            const updatedUserAvatar = await updateAvatar(linkValue);
-            updateUserAvatar(profileAvatar, updatedUserAvatar);
-            closePopup(popupChangeAvatar);
-            evt.target.reset();
-        } catch (error) {
-            handleError(error);
-        } finally {
-            removeUxOnButton(popupChangeAvatar);
-        }
-    } else {
-        checkInputValidity(
-            inputs.avatar.url, 
-            forms.avatar, 
-            validationConfig,
-            isValid
-        );
+      try {
+        const updatedUserAvatar = await updateAvatar(linkValue);
+        updateUserAvatar(profileAvatar, updatedUserAvatar);
+        closePopup(popupChangeAvatar);
+        evt.target.reset();
+      } catch (error) {
+        handleError(error);
+      } finally {
         removeUxOnButton(popupChangeAvatar);
+      }
+    } else {
+      checkInputValidity(
+        inputs.avatar.url,
+        forms.avatar,
+        validationConfig,
+        isValid
+      );
+      removeUxOnButton(popupChangeAvatar);
     }
-}
+  }
 
   /**
    * Обрабатывает сабмит формы профиля, обновляет данные профиля и закрывает попап.
@@ -317,14 +322,13 @@ import { handleFirstTab, handleMouseDown } from "../utils/utils.js";
    */
   async function handleCardFormSubmit(evt, textProcessor) {
     evt.preventDefault();
-  
     addUxOnButton(popupAddCard);
-  
+
     const placeNameValue = textProcessor(inputs.card.placeName.value);
     const linkValue = inputs.card.link.value;
-  
+
     const isValid = await isValidImageUrl(linkValue);
-  
+
     if (isValid) {
       addNewCardToServer(placeNameValue, linkValue)
         .then((createdCard) => {
@@ -342,12 +346,10 @@ import { handleFirstTab, handleMouseDown } from "../utils/utils.js";
         forms.card,
         validationConfig,
         isValid
-      ); 
+      );
       removeUxOnButton(popupAddCard);
     }
   }
-
-
 
   /**
    * Обработчик события отправки формы аватара.

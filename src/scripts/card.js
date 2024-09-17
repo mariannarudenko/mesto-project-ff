@@ -2,10 +2,12 @@
  * Создает элемент карточки и добавляет все необходимые обработчики.
  *
  * @param {Object} cardData - Данные карточки.
- * @param {string} loggedInUserId - Идентификатор текущего пользователя.
- * @param {Function} deleteCallback - Коллбэк для удаления карточки.
- * @param {Function} likeCallback - Коллбэк для лайка карточки.
- * @param {Function} imageClickCallback - Коллбэк для клика на изображение.
+ * @param {Object} params - Параметры для создания карточки.
+ * @param {string} params.cardConfig - Объект CSS-селекторов карточки.
+ * @param {string} params.loggedInUserId - Идентификатор текущего пользователя.
+ * @param {Function} params.deleteCallback - Коллбэк для удаления карточки.
+ * @param {Function} params.likeCallback - Коллбэк для лайка карточки.
+ * @param {Function} params.imageClickCallback - Коллбэк для клика на изображение.
  * @returns {HTMLElement} - Возвращает DOM-элемент карточки.
  */
 export function createCard(
